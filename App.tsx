@@ -6,9 +6,11 @@ import Input from './components/Input';
 export default function App() {
   const appName = "My React Native App";
   const [inputData, setInputData] = useState("");
+  const [modalVisible, setModalVisible] = useState(false);
 
   const handleInputData = (data: string) => {
     setInputData(data);
+    setModalVisible(false);
   };
 
   return (
@@ -19,7 +21,7 @@ export default function App() {
         <Text style={styles.buttonText}>
         <Button
           title="Add a goal"
-          // onPress={() => setModalVisible(true)}
+          onPress={() => setModalVisible(true)}
         />
         </Text>
       </View>
@@ -33,7 +35,7 @@ export default function App() {
 
       {/* Modal / Input component */}
       <Input
-        // visible={modalVisible}
+        visible={modalVisible}
         onInputData={handleInputData}
         focus={true}
       />
