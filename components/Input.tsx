@@ -73,6 +73,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    padding:1,
   },
   innerContainer: {
     width: '80%',
@@ -104,6 +105,8 @@ const styles = StyleSheet.create({
   buttonContainer: {
     width: '30%',
     marginTop: 20,
+    alignItems: 'center',
+    backgroundColor: '#dcd',
   },
 });
 
