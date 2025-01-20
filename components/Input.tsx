@@ -3,9 +3,10 @@ import { View, TextInput, Text, StyleSheet, Button } from 'react-native';
 
 type InputProps = {
   focus: boolean; // Prop to control focus
+  onInputData: (data: string) => void; // Prop to handle input data
 };
 
-const Input: React.FC<InputProps> = ({ focus }) => {
+const Input: React.FC<InputProps> = ({ focus, onInputData }) => {
   const [inputValue, setInputValue] = useState("");
   const [isFocused, setIsFocused] = useState(false);
   const [showMessage, setShowMessage] = useState(false);
@@ -21,7 +22,9 @@ const Input: React.FC<InputProps> = ({ focus }) => {
   };
   
   const handleConfirm = () => {
-    console.log("Confirm")
+    if (inputValue.length > 0) {
+      onInputData(inputValue);
+    }
   }
 
   const characterCount = inputValue.length;
