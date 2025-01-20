@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, TextInput, Text, StyleSheet } from 'react-native';
+import { View, TextInput, Text, StyleSheet, Button } from 'react-native';
 
 type InputProps = {
   focus: boolean; // Prop to control focus
@@ -19,6 +19,10 @@ const Input: React.FC<InputProps> = ({ focus }) => {
     setIsFocused(true);
     setShowMessage(false);
   };
+  
+  const handleConfirm = () => {
+    console.log("Confirm")
+  }
 
   const characterCount = inputValue.length;
 
@@ -46,6 +50,7 @@ const Input: React.FC<InputProps> = ({ focus }) => {
             : "Please type more than 3 characters"}
         </Text>
       )}
+      <Button onPress={handleConfirm} title="Confirm" />
     </View>
   );
 };
