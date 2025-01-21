@@ -13,6 +13,10 @@ export default function App() {
     setModalVisible(false);
   };
 
+  const handleCancel = () => {
+    setModalVisible(false);
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Top Section (Header + Button) */}
@@ -37,6 +41,7 @@ export default function App() {
       <Input
         visible={modalVisible}
         onInputData={handleInputData}
+        onCancel={handleCancel}
         focus={true}
       />
     </SafeAreaView>
