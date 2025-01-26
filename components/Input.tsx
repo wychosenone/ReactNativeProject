@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import { View, TextInput, Text, StyleSheet, Button, Modal } from 'react-native';
+import { View, TextInput, Text, StyleSheet, Button, Modal, Alert,Image } from 'react-native';
 
 type InputProps = {
   focus: boolean; // Prop to control focus
   onInputData: (data: string) => void; // Prop to handle input data
   visible: boolean; // Prop to control modal visibility
+  onCancel: () => void; // Prop to handle cancel button press
 };
 
-const Input: React.FC<InputProps> = ({ focus, onInputData, visible }) => {
+const Input: React.FC<InputProps> = ({ focus, onInputData, visible, onCancel }) => {
   const [inputValue, setInputValue] = useState("");
   const [isFocused, setIsFocused] = useState(false);
   const [showMessage, setShowMessage] = useState(false);
@@ -26,7 +27,24 @@ const Input: React.FC<InputProps> = ({ focus, onInputData, visible }) => {
     if (inputValue.length > 0) {
       onInputData(inputValue);
     }
+    setInputValue("");
   }
+
+  const handleCancel = () => {
+    Alert.alert(
+      "Cancel",
+      "Are you sure you want to cancel?",
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "OK", onPress: () => {
+          onCancel();  // Call the onCancel callback passed from App
+          setInputValue(""); // Clear the input field after cancellation
+        }
+      },
+      ],
+      { cancelable: false }
+    );
+  };
 
   const characterCount = inputValue.length;
 
@@ -39,6 +57,18 @@ const Input: React.FC<InputProps> = ({ focus, onInputData, visible }) => {
     >
     <View style={styles.modalContainer}>
       <View style={styles.innerContainer}>
+        <View style={styles.imageContainer}>
+          <Image
+            source={{ uri: 'https://cdn-icons-png.flaticon.com/512/2617/2617812.png' }}
+            style={styles.image}
+            alt="Network image of a goal icon" // Description for screen readers
+          />
+          <Image
+            source={require('../assets/2617812.png')} // Local image path
+            style={styles.image}
+            alt="Local image of a goal icon" // Description for screen readers
+          />
+        </View>
         <TextInput
           style={styles.input}
           value={inputValue}
@@ -59,8 +89,15 @@ const Input: React.FC<InputProps> = ({ focus, onInputData, visible }) => {
           </Text>
         )}
         <View style={styles.buttonContainer}>
-          <Button title="Confirm" onPress={handleConfirm} />
+          <View style={styles.button}>
+            <Button title="Cancel" onPress={handleCancel} />
+          </View>
+          <View style={styles.button}>
+            <Button title="Confirm" onPress={handleConfirm} disabled={characterCount >= 3 ? false : true}/>
+          </View>
         </View>
+
+        {/* Add Image components */}
       </View>
     </View>
     </Modal>
@@ -88,7 +125,7 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderWidth: 1,
     padding: 10,
-    width: '100%', // Input takes full width of inner container
+    width: '100%',
     borderRadius: 5,
     marginBottom: 20,
   },
@@ -103,10 +140,34 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   buttonContainer: {
-    width: '30%',
     marginTop: 20,
-    alignItems: 'center',
-    backgroundColor: '#dcd',
+    width: '80%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    margin:10,
+  },
+  button: {
+    flex: 1,
+    marginHorizontal: 10,
+    borderWidth:2,
+    borderRadius:10,
+    borderColor: "grey"
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  imageContainer: {
+    marginTop: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '80%',
+  },
+  image: {
+    width: 100,
+    height: 100,
+    marginHorizontal: 10,
+    marginVertical: 10,
   },
 });
 
