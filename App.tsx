@@ -1,21 +1,32 @@
-import React, {useState} from 'react';
-import { View, StyleSheet, Text, SafeAreaView, Button } from 'react-native';
-import Header from './components/Header';
-import Input from './components/Input';
+import React, { useState } from "react";
+import { View, StyleSheet, Text, SafeAreaView, Button, FlatList } from "react-native";
+import Header from "./components/Header";
+import Input from "./components/Input";
+import GoalItem from "./components/GoalItem";
+
+export interface Goal {
+  id: number;
+  text: string;
+}
 
 export default function App() {
   const appName = "My React Native App";
-  const [inputData, setInputData] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
+  const [goals, setGoals] = useState<Goal[]>([]);
 
   const handleInputData = (data: string) => {
-    setInputData(data);
+    const newGoal: Goal = { text: data, id: Math.random() }; // Create a new goal object
+    setGoals((prevGoals) => [...prevGoals, newGoal]); // Add the new goal to the state
     setModalVisible(false);
   };
 
   const handleCancel = () => {
     setModalVisible(false);
-  }
+  };
+
+  const handleDeleteGoal = (goalId: number) => {
+    setGoals((prevGoals) => prevGoals.filter((goal) => goal.id !== goalId));
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -23,18 +34,21 @@ export default function App() {
       <View style={styles.topSection}>
         <Header appName={appName} />
         <Text style={styles.buttonText}>
-        <Button
-          title="Add a goal"
-          onPress={() => setModalVisible(true)}
-        />
+          <Button title="Add a goal" onPress={() => setModalVisible(true)} />
         </Text>
       </View>
 
-      {/* Bottom Section (User Input Text) */}
+      {/* Bottom Section (Goals List in FlatList) */}
       <View style={styles.bottomSection}>
-        <View style={styles.textContainer}>
-          <Text style={styles.inputText}>User Input: {inputData}</Text>
-        </View>
+        <FlatList
+          data={goals}
+          renderItem={({ item }) => <GoalItem id={item.id}
+          text={item.text}
+          onDelete={handleDeleteGoal}
+           />}
+          keyExtractor={(item) => item.id.toString()}
+          contentContainerStyle={styles.scrollContainer}
+        />
       </View>
 
       {/* Modal / Input component */}
@@ -54,32 +68,35 @@ const styles = StyleSheet.create({
   },
   topSection: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#eaeaea',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#eaeaea",
   },
   bottomSection: {
     flex: 4,
-    alignItems: 'center',
-    backgroundColor: '#f2f2f2',
-  },
-  textContainer: {
-    backgroundColor: 'grey',
-    padding: 10,
-    borderRadius: 10,
-    margin: 10,
-  },
-  inputText: {
-    fontSize: 18,
-    color: 'blue',
-    fontWeight: 'bold',
+    backgroundColor: "white",
   },
   buttonText: {
     borderWidth: 2,
     margin: 10,
     borderRadius: 10,
-    backgroundColor: 'light-grey',
-    color: 'blue',
-    fontWeight: 'bold',
-  }
+    backgroundColor: "light-grey",
+    color: "blue",
+    fontWeight: "bold",
+  },
+  scrollContainer: {
+    padding: 10,
+    alignItems: "center",
+  },
+  goalItem: {
+    backgroundColor: "#f9c2ff",
+    padding: 10,
+    marginVertical: 5,
+    borderRadius: 5,
+    width: "90%",
+  },
+  goalText: {
+    fontSize: 10,
+    color: "black",
+  },
 });
