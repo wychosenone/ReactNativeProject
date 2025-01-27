@@ -3,13 +3,21 @@ import { View, StyleSheet, Text, SafeAreaView, Button } from 'react-native';
 import Header from './components/Header';
 import Input from './components/Input';
 
+export interface Goal {
+  id: number;
+  text: string;
+}
 export default function App() {
   const appName = "My React Native App";
-  const [inputData, setInputData] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
+  const [goals, setGoals] = useState<Goal[]>([]);
 
   const handleInputData = (data: string) => {
-    setInputData(data);
+    //define a variable of type goal
+    //update it with the data received from input and a random value
+    // add the obkect to the goals array
+    const newGoal: Goal = { text: data, id: Math.random() }; // Create a new goal object
+    setGoals((prevGoals) => [...prevGoals, newGoal]); // Add the new goal to the state
     setModalVisible(false);
   };
 
@@ -30,10 +38,14 @@ export default function App() {
         </Text>
       </View>
 
-      {/* Bottom Section (User Input Text) */}
-      <View style={styles.bottomSection}>
+       {/* Bottom Section (Goals List) */}
+       <View style={styles.bottomSection}>
         <View style={styles.textContainer}>
-          <Text style={styles.inputText}>User Input: {inputData}</Text>
+          {goals.map((goalObj) => (
+            <View key={goalObj.id} style={styles.goalItem}>
+              <Text style={styles.goalText}>{goalObj.text}</Text>
+            </View>
+          ))}
         </View>
       </View>
 
@@ -61,16 +73,16 @@ const styles = StyleSheet.create({
   bottomSection: {
     flex: 4,
     alignItems: 'center',
-    backgroundColor: '#f2f2f2',
+    backgroundColor: 'white',
   },
   textContainer: {
-    backgroundColor: 'grey',
+    backgroundColor: 'lightgray',
     padding: 10,
     borderRadius: 10,
     margin: 10,
   },
   inputText: {
-    fontSize: 18,
+    fontSize: 20,
     color: 'blue',
     fontWeight: 'bold',
   },
@@ -81,5 +93,15 @@ const styles = StyleSheet.create({
     backgroundColor: 'light-grey',
     color: 'blue',
     fontWeight: 'bold',
-  }
+  },
+  goalItem: {
+    backgroundColor: "#f9c2ff",
+    padding: 10,
+    marginVertical: 5,
+    borderRadius: 5,
+  },
+  goalText: {
+    fontSize: 16,
+    color: "black",
+  },
 });
