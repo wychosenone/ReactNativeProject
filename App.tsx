@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, StyleSheet, Text, SafeAreaView, Button, FlatList } from "react-native";
+import { View, StyleSheet, Text, SafeAreaView, Button, FlatList, Alert } from "react-native";
 import Header from "./components/Header";
 import Input from "./components/Input";
 import GoalItem from "./components/GoalItem";
@@ -28,6 +28,17 @@ export default function App() {
     setGoals((prevGoals) => prevGoals.filter((goal) => goal.id !== goalId));
   };
 
+  const handleDeleteAll = () => {
+    Alert.alert(
+      "Delete All Goals",
+      "Are you sure you want to delete all goals?",
+      [
+        { text: "No", style: "cancel" },
+        { text: "Yes", onPress: () => setGoals([]) },
+      ]
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Top Section (Header + Button) */}
@@ -42,12 +53,29 @@ export default function App() {
       <View style={styles.bottomSection}>
         <FlatList
           data={goals}
-          renderItem={({ item }) => <GoalItem id={item.id}
-          text={item.text}
-          onDelete={handleDeleteGoal}
-           />}
-          keyExtractor={(item) => item.id.toString()}
-          contentContainerStyle={styles.scrollContainer}
+          renderItem={({ item }) => 
+          <GoalItem id={item.id}
+            text={item.text}
+            onDelete={handleDeleteGoal}
+            />}
+            keyExtractor={(item) => item.id.toString()}
+            contentContainerStyle={styles.scrollContainer}
+            ListHeaderComponent={
+              goals.length > 0 ? (
+                <Text style={styles.listHeader}>My Goals</Text>
+              ) : null
+            }
+            ListEmptyComponent={
+              <Text style={styles.emptyText}>No goals to show</Text>
+            }
+            ListFooterComponent={
+              goals.length > 0 ? (
+                <View style={styles.footer}>
+                  <Button title="Delete All" color="red" onPress={handleDeleteAll} />
+                </View>
+              ) : null
+            }
+            ItemSeparatorComponent={() => <View style={styles.separator} />}
         />
       </View>
 
@@ -99,4 +127,27 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: "black",
   },
+  emptyText: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "gray",
+    textAlign: "center",
+    marginTop: 20,
+  },
+  listHeader: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "black",
+    textAlign: "center",
+    marginVertical: 10,
+  },
+  footer: {
+    marginVertical: 20,
+    alignItems: "center",
+  },
+  separator: {
+    height: 1,
+    backgroundColor: "#ccc",
+    marginVertical: 10,
+  }
 });
