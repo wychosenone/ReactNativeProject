@@ -3,6 +3,8 @@ import { View, StyleSheet, Text, SafeAreaView, Button, FlatList, Alert } from "r
 import Header from "./components/Header";
 import Input from "./components/Input";
 import GoalItem from "./components/GoalItem";
+import app from './Firebase/firebaseSetup';
+import { writeToDB } from "./Firebase/firestoreHelper";
 
 export interface Goal {
   id: number;
@@ -22,6 +24,7 @@ export default function App() {
 
   const handleCancel = () => {
     setModalVisible(false);
+    console.log(app)
   };
 
   const handleDeleteGoal = (goalId: number) => {
