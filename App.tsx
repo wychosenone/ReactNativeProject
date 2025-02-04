@@ -1,22 +1,55 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, StyleSheet, Text, SafeAreaView, Button, FlatList, Alert } from "react-native";
 import Header from "./components/Header";
 import Input from "./components/Input";
 import GoalItem from "./components/GoalItem";
+import { database } from './Firebase/firebaseSetup'; 
+import { writeToDB } from "./Firebase/firestoreHelper";
+import { goalData } from "./Firebase/firestoreHelper";
+import { onSnapshot } from "firebase/firestore";
+import { collection } from "firebase/firestore";
+import { deleteFromDB } from "./Firebase/firestoreHelper";
+import { deleteAllFromDB } from "./Firebase/firestoreHelper";
 
-export interface Goal {
-  id: number;
+export interface GoalFromDB {
+  id: string;
   text: string;
 }
 
 export default function App() {
   const appName = "My React Native App";
   const [modalVisible, setModalVisible] = useState(false);
-  const [goals, setGoals] = useState<Goal[]>([]);
+  const [goals, setGoals] = useState<GoalFromDB[]>([]);
 
-  const handleInputData = (data: string) => {
-    const newGoal: Goal = { text: data, id: Math.random() }; // Create a new goal object
-    setGoals((prevGoals) => [...prevGoals, newGoal]); // Add the new goal to the state
+  useEffect(() => {
+    const unsubscribe = onSnapshot(
+      collection(database, "goals"),
+      (querySnapshot) => {
+        //check if the querySnapshot is empty
+        if (querySnapshot.empty) {
+          setGoals([]);
+        } else {
+          let newArrayOfGoals: GoalFromDB[] = [];
+          querySnapshot.forEach((docSnapshot) => {
+            console.log(docSnapshot.id);
+            newArrayOfGoals.push({
+              ...(docSnapshot.data() as goalData),
+              id: docSnapshot.id,
+            });
+          });
+          console.log("newArrayOfGoals", newArrayOfGoals);
+          setGoals(newArrayOfGoals);
+        }
+      }
+    );
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
+  const handleInputData = async (data: string) => {
+    const newGoal = { text: data };
+    await writeToDB(newGoal, "goals");
     setModalVisible(false);
   };
 
@@ -24,17 +57,22 @@ export default function App() {
     setModalVisible(false);
   };
 
-  const handleDeleteGoal = (goalId: number) => {
-    setGoals((prevGoals) => prevGoals.filter((goal) => goal.id !== goalId));
+  const handleDeleteGoal = async (deletedId: string) => {
+    await deleteFromDB(deletedId, "goals"); // Delete from Firestore
+    setGoals((prevGoals) => prevGoals.filter((goal) => goal.id !== deletedId));
   };
 
-  const handleDeleteAll = () => {
+  const handleDeleteAll = async () => {
     Alert.alert(
       "Delete All Goals",
       "Are you sure you want to delete all goals?",
       [
         { text: "No", style: "cancel" },
-        { text: "Yes", onPress: () => setGoals([]) },
+        { text: "Yes", onPress: async () => {
+            await deleteAllFromDB("goals");
+            setGoals([]);
+          },
+        },
       ]
     );
   };
@@ -54,28 +92,25 @@ export default function App() {
         <FlatList
           data={goals}
           renderItem={({ item }) => 
-          <GoalItem id={item.id}
-            text={item.text}
-            onDelete={handleDeleteGoal}
-            />}
-            keyExtractor={(item) => item.id.toString()}
-            contentContainerStyle={styles.scrollContainer}
-            ListHeaderComponent={
-              goals.length > 0 ? (
-                <Text style={styles.listHeader}>My Goals</Text>
-              ) : null
-            }
-            ListEmptyComponent={
-              <Text style={styles.emptyText}>No goals to show</Text>
-            }
-            ListFooterComponent={
-              goals.length > 0 ? (
-                <View style={styles.footer}>
-                  <Button title="Delete All" color="red" onPress={handleDeleteAll} />
-                </View>
-              ) : null
-            }
-            ItemSeparatorComponent={() => <View style={styles.separator} />}
+            <GoalItem goalObj={item} deleteHandler={handleDeleteGoal} />}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.scrollContainer}
+          ListHeaderComponent={
+            goals.length > 0 ? (
+              <Text style={styles.listHeader}>My Goals</Text>
+            ) : null
+          }
+          ListEmptyComponent={
+            <Text style={styles.emptyText}>No goals to show</Text>
+          }
+          ListFooterComponent={
+            goals.length > 0 ? (
+              <View style={styles.footer}>
+                <Button title="Delete All" color="red" onPress={handleDeleteAll} />
+              </View>
+            ) : null
+          }
+          ItemSeparatorComponent={() => <View style={styles.separator} />}
         />
       </View>
 
