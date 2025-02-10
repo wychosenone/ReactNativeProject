@@ -12,7 +12,7 @@ const firebaseConfig = {
   storageBucket: process.env.EXPO_PUBLIC_storageBucket,
   messagingSenderId: process.env.EXPO_PUBLIC_messagingSenderId,
   appId: process.env.EXPO_PUBLIC_appId,
-  measurementId: process.env.Expo_PUBLIC_measurementId
+  measurementId: process.env.EXPO_PUBLIC_measurementId
 };
 
 // Initialize Firebase
