@@ -1,6 +1,7 @@
-import { Button, StyleSheet, Text, View } from "react-native";
+import { Button, StyleSheet, Text, View} from "react-native";
 import React from "react";
-import { GoalFromDB } from "@/App";
+import { GoalFromDB } from "@/app";
+import { Link } from "expo-router/build/link/Link";
 
 interface GoalItemProps {
   goalObj: GoalFromDB;
@@ -17,6 +18,9 @@ export default function GoalItem({ goalObj, deleteHandler }: GoalItemProps) {
           deleteHandler(goalObj.id);
         }}
       />
+      <Link asChild href={`/goals/${goalObj.id}?sort="asc"`}>
+        <Button title="info" />
+      </Link>
     </View>
   );
 }

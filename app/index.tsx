@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { View, StyleSheet, Text, SafeAreaView, Button, FlatList, Alert } from "react-native";
-import Header from "./components/Header";
-import Input from "./components/Input";
-import GoalItem from "./components/GoalItem";
-import { database } from './Firebase/firebaseSetup'; 
-import { writeToDB } from "./Firebase/firestoreHelper";
-import { goalData } from "./Firebase/firestoreHelper";
+import Header from "../components/Header";
+import Input from "../components/Input";
+import GoalItem from "../components/GoalItem";
+import { database } from '../Firebase/firebaseSetup'; 
+import { writeToDB } from "../Firebase/firestoreHelper";
+import { goalData } from "../Firebase/firestoreHelper";
 import { onSnapshot } from "firebase/firestore";
 import { collection } from "firebase/firestore";
-import { deleteFromDB } from "./Firebase/firestoreHelper";
-import { deleteAllFromDB } from "./Firebase/firestoreHelper";
+import { deleteFromDB } from "../Firebase/firestoreHelper";
+import { deleteAllFromDB } from "../Firebase/firestoreHelper";
 
 export interface GoalFromDB {
   id: string;
