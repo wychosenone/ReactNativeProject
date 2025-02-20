@@ -4,36 +4,39 @@ import { MaterialIcons } from "@expo/vector-icons";
 
 interface PressableButtonProps {
   onPress: () => void;
+  iconName: keyof typeof MaterialIcons.glyphMap;
+  iconColor?: string;
+  iconSize?: number;
   style?: StyleProp<ViewStyle>;
   pressedStyle?: StyleProp<ViewStyle>;
 }
 
 export function PressableButton({
   onPress,
+  iconName,
+  iconColor = "black",
+  iconSize = 24,
   style,
   pressedStyle,
 }: PressableButtonProps) {
   return (
     <Pressable
       onPress={onPress}
-      style={({ pressed }) => [
-        style,
-        pressed && pressedStyle,
-      ]}
-      android_ripple={{
-        color: "#ccc",
-        borderless: false,
-        radius: 50,
-      }}
+      style={({ pressed }) => [style, pressed && pressedStyle]}
+      android_ripple={{ color: "#ccc", borderless: false, radius: 50 }}
     >
-      <MaterialIcons name="delete" size={20} color="white" style={styles.icon} />
+      <MaterialIcons
+        name={iconName}
+        size={iconSize}
+        color={iconColor}
+        style={styles.icon}
+      />
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   icon: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    padding: 4,
   },
 });
