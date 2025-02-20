@@ -1,15 +1,24 @@
 import React, { useState, useEffect } from "react";
-import { View, StyleSheet, Text, SafeAreaView, Button, FlatList, Alert } from "react-native";
+import {
+  View,
+  StyleSheet,
+  Text,
+  SafeAreaView,
+  Button,
+  FlatList,
+  Alert,
+} from "react-native";
 import Header from "../components/Header";
 import Input from "../components/Input";
 import GoalItem from "../components/GoalItem";
-import { database } from '../Firebase/firebaseSetup'; 
-import { writeToDB } from "../Firebase/firestoreHelper";
-import { goalData } from "../Firebase/firestoreHelper";
-import { onSnapshot } from "firebase/firestore";
-import { collection } from "firebase/firestore";
-import { deleteFromDB } from "../Firebase/firestoreHelper";
-import { deleteAllFromDB } from "../Firebase/firestoreHelper";
+import { database } from "../Firebase/firebaseSetup";
+import {
+  writeToDB,
+  goalData,
+  deleteFromDB,
+  deleteAllFromDB,
+} from "../Firebase/firestoreHelper";
+import { onSnapshot, collection } from "firebase/firestore";
 
 export interface GoalFromDB {
   id: string;
@@ -22,29 +31,21 @@ export default function App() {
   const [goals, setGoals] = useState<GoalFromDB[]>([]);
 
   useEffect(() => {
-    const unsubscribe = onSnapshot(
-      collection(database, "goals"),
-      (querySnapshot) => {
-        //check if the querySnapshot is empty
-        if (querySnapshot.empty) {
-          setGoals([]);
-        } else {
-          let newArrayOfGoals: GoalFromDB[] = [];
-          querySnapshot.forEach((docSnapshot) => {
-            console.log(docSnapshot.id);
-            newArrayOfGoals.push({
-              ...(docSnapshot.data() as goalData),
-              id: docSnapshot.id,
-            });
+    const unsubscribe = onSnapshot(collection(database, "goals"), (querySnapshot) => {
+      if (querySnapshot.empty) {
+        setGoals([]);
+      } else {
+        let newArrayOfGoals: GoalFromDB[] = [];
+        querySnapshot.forEach((docSnapshot) => {
+          newArrayOfGoals.push({
+            ...(docSnapshot.data() as goalData),
+            id: docSnapshot.id,
           });
-          console.log("newArrayOfGoals", newArrayOfGoals);
-          setGoals(newArrayOfGoals);
-        }
+        });
+        setGoals(newArrayOfGoals);
       }
-    );
-    return () => {
-      unsubscribe();
-    };
+    });
+    return () => unsubscribe();
   }, []);
 
   const handleInputData = async (data: string) => {
@@ -58,23 +59,21 @@ export default function App() {
   };
 
   const handleDeleteGoal = async (deletedId: string) => {
-    await deleteFromDB(deletedId, "goals"); // Delete from Firestore
+    await deleteFromDB(deletedId, "goals");
     setGoals((prevGoals) => prevGoals.filter((goal) => goal.id !== deletedId));
   };
 
   const handleDeleteAll = async () => {
-    Alert.alert(
-      "Delete All Goals",
-      "Are you sure you want to delete all goals?",
-      [
-        { text: "No", style: "cancel" },
-        { text: "Yes", onPress: async () => {
-            await deleteAllFromDB("goals");
-            setGoals([]);
-          },
+    Alert.alert("Delete All Goals", "Are you sure you want to delete all goals?", [
+      { text: "No", style: "cancel" },
+      {
+        text: "Yes",
+        onPress: async () => {
+          await deleteAllFromDB("goals");
+          setGoals([]);
         },
-      ]
-    );
+      },
+    ]);
   };
 
   return (
@@ -91,14 +90,26 @@ export default function App() {
       <View style={styles.bottomSection}>
         <FlatList
           data={goals}
-          renderItem={({ item }) => 
-            <GoalItem goalObj={item} deleteHandler={handleDeleteGoal} />}
           keyExtractor={(item) => item.id}
+          renderItem={({ item, separators }) => (
+            <GoalItem
+              goalObj={item}
+              deleteHandler={handleDeleteGoal}
+              onPressIn={() => separators.highlight()}
+              onPressOut={() => separators.unhighlight()}
+            />
+          )}
+          ItemSeparatorComponent={({ highlighted }) => (
+            <View
+              style={[
+                styles.separator,
+                highlighted && styles.separatorHighlighted,
+              ]}
+            />
+          )}
           contentContainerStyle={styles.scrollContainer}
           ListHeaderComponent={
-            goals.length > 0 ? (
-              <Text style={styles.listHeader}>My Goals</Text>
-            ) : null
+            goals.length > 0 ? <Text style={styles.listHeader}>My Goals</Text> : null
           }
           ListEmptyComponent={
             <Text style={styles.emptyText}>No goals to show</Text>
@@ -110,7 +121,6 @@ export default function App() {
               </View>
             ) : null
           }
-          ItemSeparatorComponent={() => <View style={styles.separator} />}
         />
       </View>
 
@@ -151,17 +161,6 @@ const styles = StyleSheet.create({
     padding: 10,
     alignItems: "center",
   },
-  goalItem: {
-    backgroundColor: "#f9c2ff",
-    padding: 10,
-    marginVertical: 5,
-    borderRadius: 5,
-    width: "90%",
-  },
-  goalText: {
-    fontSize: 10,
-    color: "black",
-  },
   emptyText: {
     fontSize: 18,
     fontWeight: "bold",
@@ -181,8 +180,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   separator: {
-    height: 1,
-    backgroundColor: "#ccc",
-    marginVertical: 10,
-  }
+    height: 5,
+    backgroundColor: "black",
+    alignSelf: "stretch",
+  },
+  separatorHighlighted: {
+    backgroundColor: "blue",
+  },
 });

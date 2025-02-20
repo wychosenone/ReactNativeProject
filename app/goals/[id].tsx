@@ -1,7 +1,9 @@
+// GoalDetails.tsx
 import { goalData, readDocFromDB, updateDB } from "@/Firebase/firestoreHelper";
 import { useLocalSearchParams, useNavigation } from "expo-router";
 import { useEffect, useState, useLayoutEffect } from "react";
-import { Text, View, ActivityIndicator, Button } from "react-native";
+import { Text, View, ActivityIndicator } from "react-native";
+import { PressableButton } from "@/components/PressableButton"; // <-- import your dynamic PressableButton
 
 export default function GoalDetails() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -25,7 +27,6 @@ export default function GoalDetails() {
         setLoading(false);
       }
     };
-
     fetchGoal();
   }, [id]);
 
@@ -34,10 +35,12 @@ export default function GoalDetails() {
       navigation.setOptions({
         title: isWarning ? "⚠️ Warning!" : goal.text,
         headerRight: () => (
-          <Button
-            title="⚠️ Warning"
-            color="red"
+          <PressableButton
             onPress={toggleWarning}
+            iconName="warning"   // <-- "warning" icon
+            iconColor="red"      // <-- color red
+            iconSize={24}        // <-- size 24
+            style={{ marginRight: 10 }}
           />
         ),
       });
@@ -48,7 +51,6 @@ export default function GoalDetails() {
     if (!id) return;
     const newWarningState = !isWarning;
     setIsWarning(newWarningState);
-
     try {
       await updateDB(id, "goals", { warning: newWarningState });
     } catch (err) {
@@ -61,12 +63,26 @@ export default function GoalDetails() {
   }
 
   return (
-    <View style={{ backgroundColor: isWarning ? "red" : "white", flex: 1, padding: 20 }}>
-      <Text style={{ fontSize: 20, fontWeight: "bold", color: isWarning ? "white" : "black" }}>
+    <View
+      style={{
+        backgroundColor: isWarning ? "red" : "white",
+        flex: 1,
+        padding: 20,
+      }}
+    >
+      <Text
+        style={{
+          fontSize: 20,
+          fontWeight: "bold",
+          color: isWarning ? "white" : "black",
+        }}
+      >
         Goal Details
       </Text>
       {goal ? (
-        <Text style={{ color: isWarning ? "white" : "black" }}>Goal: {goal.text}</Text>
+        <Text style={{ color: isWarning ? "white" : "black" }}>
+          Goal: {goal.text}
+        </Text>
       ) : (
         <Text>No goal found for this ID.</Text>
       )}

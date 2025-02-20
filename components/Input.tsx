@@ -37,8 +37,8 @@ const Input: React.FC<InputProps> = ({ focus, onInputData, visible, onCancel }) 
       [
         { text: "Cancel", style: "cancel" },
         { text: "OK", onPress: () => {
-          onCancel();  // Call the onCancel callback passed from App
-          setInputValue(""); // Clear the input field after cancellation
+          onCancel();
+          setInputValue("");
         }
       },
       ],
