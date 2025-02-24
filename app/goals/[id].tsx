@@ -1,9 +1,9 @@
-// GoalDetails.tsx
 import { goalData, readDocFromDB, updateDB } from "@/Firebase/firestoreHelper";
 import { useLocalSearchParams, useNavigation } from "expo-router";
 import { useEffect, useState, useLayoutEffect } from "react";
 import { Text, View, ActivityIndicator } from "react-native";
-import { PressableButton } from "@/components/PressableButton"; // <-- import your dynamic PressableButton
+import { PressableButton } from "@/components/PressableButton";
+import GoalUsers from "@/components/GoalUsers";
 
 export default function GoalDetails() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -37,9 +37,9 @@ export default function GoalDetails() {
         headerRight: () => (
           <PressableButton
             onPress={toggleWarning}
-            iconName="warning"   // <-- "warning" icon
-            iconColor="red"      // <-- color red
-            iconSize={24}        // <-- size 24
+            iconName="warning"
+            iconColor="red"
+            iconSize={24}
             style={{ marginRight: 10 }}
           />
         ),
@@ -77,7 +77,7 @@ export default function GoalDetails() {
           color: isWarning ? "white" : "black",
         }}
       >
-        Goal Details
+        <GoalUsers goalId={id} />
       </Text>
       {goal ? (
         <Text style={{ color: isWarning ? "white" : "black" }}>
