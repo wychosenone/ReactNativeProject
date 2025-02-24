@@ -1,5 +1,6 @@
 import { database } from './firebaseSetup';
 import { collection, addDoc, doc, deleteDoc, getDocs, getDoc, updateDoc } from 'firebase/firestore';
+import { User } from '@/components/GoalUsers';
 
 export interface goalData {
   id?: string;
@@ -15,7 +16,7 @@ export async function updateDB(id: string, collectionName: string, updates: Part
     console.error("Error updating document:", err);
   }
 }
-export async function writeToDB(data: goalData, collectionName: string) {
+export async function writeToDB(data: goalData|User, collectionName: string) {
   try {
     const goalsCollectionRef = collection(database, collectionName);
     await addDoc(goalsCollectionRef, data);
@@ -61,3 +62,15 @@ export async function readDocFromDB(id: string, collectionName: string) {
     return null;
   }
 }
+
+export async function readAllFromDB(collectionName: string) {
+  const querySnapshot = await getDocs(collection(database, collectionName));
+  if (querySnapshot.empty) return null;
+  let data: User[] = [];
+  querySnapshot.forEach((docSnapshot) => {
+    data.push(docSnapshot.data() as User);
+    return data;
+  });
+  return data;
+}
+
