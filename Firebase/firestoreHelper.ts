@@ -1,6 +1,6 @@
 import { database } from './firebaseSetup';
 import { collection, addDoc, doc, deleteDoc, getDocs, getDoc, updateDoc } from 'firebase/firestore';
-import { User } from '@/components/GoalUsers';
+import { User } from '@/types';
 
 export interface goalData {
   id?: string;
@@ -63,14 +63,14 @@ export async function readDocFromDB(id: string, collectionName: string) {
   }
 }
 
+//read all documents from the database
 export async function readAllFromDB(collectionName: string) {
   const querySnapshot = await getDocs(collection(database, collectionName));
   if (querySnapshot.empty) return null;
   let data: User[] = [];
   querySnapshot.forEach((docSnapshot) => {
     data.push(docSnapshot.data() as User);
-    return data;
   });
+  //return the data
   return data;
 }
-

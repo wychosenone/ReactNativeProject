@@ -70,22 +70,15 @@ export default function GoalDetails() {
         padding: 20,
       }}
     >
-      <Text
-        style={{
-          fontSize: 20,
-          fontWeight: "bold",
-          color: isWarning ? "white" : "black",
-        }}
-      >
-        <GoalUsers goalId={id} />
-      </Text>
       {goal ? (
         <Text style={{ color: isWarning ? "white" : "black" }}>
           Goal: {goal.text}
         </Text>
+        
       ) : (
         <Text>No goal found for this ID.</Text>
       )}
+        <GoalUsers goalId={id} />
     </View>
   );
 }

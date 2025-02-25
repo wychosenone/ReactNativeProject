@@ -1,83 +1,105 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet } from 'react-native';
-import { writeToDB, readAllFromDB } from '@/Firebase/firestoreHelper';
+import { FlatList, StyleSheet, Text, View, Button, TouchableOpacity } from "react-native";
+import React, { useEffect, useState } from "react";
+import { readAllFromDB, writeToDB } from "@/Firebase/firestoreHelper";
+import { User } from "@/types";
 
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-}
-
-export interface GoalUsersProps {
+interface GoalUsersProps {
   goalId: string;
 }
 
-const GoalUsers: React.FC<GoalUsersProps> = ({ goalId }) => {
-  const [users, setUsers] = useState<User[]>([]);
-  const [error, setError] = useState<string>('');
+export default function GoalUsers({ goalId }: GoalUsersProps) {
+  const [users, setUsers] = useState<String[]>([]);
 
   useEffect(() => {
-    const fetchUsers = async () => {
+    async function getUsers() {
       try {
-        const storedUsers = await readAllFromDB(`goals/${goalId}/users`);
-        if (!storedUsers) {
-          throw new Error('No users found in Firestore');
+        // Check the database if the users are already there
+        const userFromDB = await readAllFromDB(`goals/${goalId}/users`);
+        console.log("Read from DB");
+
+        // If they are, set the users state to the users from the database
+        if (userFromDB) {
+          const userNames = userFromDB.map((user: User) => user.name);
+          setUsers(userNames);
+          return;
         }
-        const response = await fetch('https://jsonplaceholder.typicode.com/users');
+
+        // If they are not, fetch the users from the API
+        const response = await fetch("https://jsonplaceholder.typicode.com/users");
+        console.log("Reading from API");
+
         if (!response.ok) {
-          throw new Error(`Network response was not ok, with code ${response.status}`);
+          throw new Error(`Something went wrong with the ${response.status} code`);
         }
 
+        // Extract the JSON data
         const data = await response.json();
-        setUsers(data);
 
-        for (const user of data) {
-          await writeToDB(user, `goals/${goalId}/users`);
-        }
+        // Write the users data to Firestore using writeToDB
+        const userNames = data.map((user: User) => {
+          writeToDB(user, `goals/${goalId}/users`);
+          return user.name;
+        });
+
+        setUsers(userNames);
       } catch (err) {
-        console.error('Error fetching or writing users:', err);
-        setError('Failed to fetch or write users');
+        console.log("Error fetching users:", err);
       }
-    };
+    }
 
-    fetchUsers();
+    getUsers();
   }, [goalId]);
 
+  const handlePostRequest = async () => {
+    try {
+      // Create a fake user object
+      const fakeUser = {
+        name: "John Doe",
+        email: "john.doe@example.com",
+      };
+
+      // Send a POST request to the /users endpoint
+      const response = await fetch("https://jsonplaceholder.typicode.com/users", {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify(fakeUser),
+      });
+
+      if (!response.ok) {
+        throw new Error(`POST request failed with status ${response.status}`);
+      }
+
+      // Extract the JSON data from the response
+      const data = await response.json();
+      console.log("POST request successful:", data);
+
+      // Update the users state with the new user
+      setUsers((prevUsers) => [...prevUsers, data.name]);
+
+      // Write the new user to Firestore
+      await writeToDB(data, `goals/${goalId}/users`);
+    } catch (err) {
+      console.error("Error sending POST request:", err);
+    }
+  };
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.heading}>Goal Users</Text>
-      {error ? (
-        <Text style={styles.error}>{error}</Text>
-      ) : (
-        <FlatList
-          data={users}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <Text style={styles.item}>{item.name}</Text>
-          )}
-        />
-      )}
+    <View>
+      <FlatList
+        data={users}
+        renderItem={({ item }) => <Text>{item}</Text>}
+        keyExtractor={(item, index) => index.toString()}
+      />
+      <TouchableOpacity
+  onPress={handlePostRequest}
+  style={{ padding: 10, backgroundColor: "blue" }}
+>
+  <Text style={{ color: "white" }}>Add Fake User</Text>
+</TouchableOpacity>
     </View>
   );
-};
+}
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-  },
-  heading: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 16,
-  },
-  error: {
-    color: 'red',
-  },
-  item: {
-    fontSize: 16,
-    paddingVertical: 8,
-  },
-});
-
-export default GoalUsers;
+const styles = StyleSheet.create({});
