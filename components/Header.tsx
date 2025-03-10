@@ -1,33 +1,33 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { StyleSheet, Text, useWindowDimensions, View } from "react-native";
+import React from "react";
+import { Dimensions } from "react-native";
+const windowWidth = Dimensions.get("window").width;
+const windowHeight = Dimensions.get("window").height;
 
-// Define Props type
-type HeaderProps = {
-  appName: string;
-};
-
-const Header: React.FC<HeaderProps> = ({ appName }) => {
+// type HeaderProps = {name:string};
+interface HeaderProps {
+  name: string;
+}
+export default function Header({ name }: HeaderProps) {
+  const { width, height } = useWindowDimensions();
+  const paddingVerticalDynamic = height < 415 ? 0 : 10;
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>Welcome to {appName}</Text>
+    <View>
+      <Text style={[styles.textStyle, { padding: paddingVerticalDynamic }]}>
+        Welcome to {name}
+      </Text>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
-  container: {
-    marginTop: 50,
-    alignItems: 'center',
-    borderWidth: 1,
-    padding:10,
-    borderRadius: 10,
-    borderColor: '#ccc',
-    backgroundColor: '#f2f2f2',
-  },
-  text: {
-    fontSize: 20,
-    fontWeight: 'bold',
+  textStyle: {
+    color: "purple",
+    fontSize: windowWidth < 380 ? 20 : 26,
+    paddingHorizontal: windowWidth < 380 ? 10 : 20,
+    borderColor: "purple",
+    borderWidth: 2,
+    padding: 5,
+    marginBottom: 10,
   },
 });
-
-export default Header;

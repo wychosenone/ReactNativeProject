@@ -1,58 +1,73 @@
+import { Alert, Button, Pressable, StyleSheet, Text, View } from "react-native";
 import React from "react";
-import { Pressable, StyleSheet, Text, Alert } from "react-native";
-import { useRouter } from "expo-router";
-import { GoalFromDB } from "@/app";
-import { PressableButton } from "./PressableButton";
+import { Link, router } from "expo-router";
+import PressableButton from "./PressableButton";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { GoalFromDB } from "@/types";
 
 interface GoalItemProps {
   goalObj: GoalFromDB;
   deleteHandler: (deletedId: string) => void;
-  // Added for highlight/unhighlight
-  onPressIn?: () => void;
-  onPressOut?: () => void;
+  separators: {
+    highlight: () => void;
+    unhighlight: () => void;
+    updateProps: (select: "leading" | "trailing", newProps: any) => void;
+  };
 }
-
 export default function GoalItem({
   goalObj,
   deleteHandler,
-  onPressIn,
-  onPressOut,
+  separators,
 }: GoalItemProps) {
-  const router = useRouter();
-
-  const handleLongPress = () => {
-    Alert.alert("Delete Goal?", "Are you sure you want to delete this goal?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Yes",
-        style: "destructive",
-        onPress: () => deleteHandler(goalObj.id),
-      },
+  function handleDelete() {
+    deleteHandler(goalObj.id);
+  }
+  function handleLongPress() {
+    Alert.alert("Delete A Goal", "Are you sure you want to delete this goal?", [
+      { text: "No" },
+      { text: "Yes", onPress: handleDelete },
     ]);
-  };
-
+  }
   return (
     <Pressable
-      style={({ pressed }) => [
-        styles.textContainer,
-        pressed && styles.pressedStyle,
-      ]}
-      onPress={() => router.push(`/goals/${goalObj.id}`)}
+      android_ripple={styles.androidRipple}
+      style={({ pressed }) => {
+        return [styles.textContainer, pressed && styles.pressed];
+      }}
+      onPressIn={() => separators.highlight()}
+      onPressOut={() => separators.unhighlight()}
       onLongPress={handleLongPress}
-      // Forward the highlight callbacks from FlatList
-      onPressIn={onPressIn}
-      onPressOut={onPressOut}
-      android_ripple={{ color: "#ccc", borderless: false, radius: 100 }}
+      onPress={() => {
+        router.navigate(`/goals/${goalObj.id}`);
+      }}
     >
-      <Text style={styles.text}>{goalObj.text}</Text>
+      <Text style={styles.text}>{goalObj.text} </Text>
       <PressableButton
-        onPress={() => deleteHandler(goalObj.id)}
-        iconName="delete"
-        iconColor="white"
-        iconSize={20}
-        style={styles.deleteBtn}
-        pressedStyle={styles.deleteBtnPressed}
-      />
+        pressedHandler={() => {
+          //pass the id
+          deleteHandler(goalObj.id);
+        }}
+        pressedStyle={styles.pressed}
+        componentStyle={styles.deleteIcon}
+      >
+        {/* <Text>x</Text> */}
+        <Ionicons name="trash" size={24} color="black" />
+      </PressableButton>
+      {/* <Button
+        title="X"
+        onPress={() => {
+          //pass the id
+          deleteHandler(goalObj.id);
+        }}
+      /> */}
+      {/* <Link asChild href={`/goals/${goalObj.id}`}> */}
+      {/* <Button
+        title="info"
+        onPress={() => {
+          router.navigate(`/goals/${goalObj.id}?sort="asc"`);
+        }}
+      /> */}
+      {/* </Link> */}
     </Pressable>
   );
 }
@@ -66,19 +81,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginVertical: 10,
   },
-  pressedStyle: {
-    backgroundColor: "#888",
-  },
   text: {
     color: "purple",
     fontSize: 20,
   },
-  deleteBtn: {
-    backgroundColor: "red",
-    borderRadius: 5,
-    marginLeft: 8,
+  pressed: {
+    backgroundColor: "grey",
+    opacity: 0.5,
   },
-  deleteBtnPressed: {
-    backgroundColor: "#c00",
+  androidRipple: { color: "red" },
+  deleteIcon: {
+    backgroundColor: "#aaa",
   },
 });
