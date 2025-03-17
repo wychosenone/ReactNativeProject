@@ -14,10 +14,10 @@ import Input from "@/components/Input";
 import { useEffect, useState } from "react";
 import GoalItem from "@/components/GoalItem";
 import { writeToDB, deleteFromDB } from "@/Firebase/firestoreHelper";
-import { collection, onSnapshot } from "firebase/firestore";
-import { database } from "@/Firebase/firebaseSetup";
+import { collection, onSnapshot, query, where } from "firebase/firestore";
+import { auth, database } from "@/Firebase/firebaseSetup";
 import PressableButton from "@/components/PressableButton";
-import { GoalData, GoalFromDB } from "@/types";
+import { GoalData, GoalFromDB, userInput } from "@/types";
 
 export default function App() {
   const appName = "My Awesome App";
@@ -25,8 +25,13 @@ export default function App() {
   const [isModalVisible, setIsModalVisible] = useState(false);
   useEffect(() => {
     //start the listener on real time changes on goals collection
+    if (!auth.currentUser) return;
     const unsubscribe = onSnapshot(
-      collection(database, "goals"),
+      // repace the next line with a query that checks for owner field:
+      query(
+        collection(database, "goals"),
+        where("owner", "==", auth.currentUser?.uid)
+      ),
       (querySnapshot) => {
         //check if the querySnapshot is empty
         if (querySnapshot.empty) {
@@ -41,6 +46,9 @@ export default function App() {
           });
           setGoals(newArrayOfGoals);
         }
+      },
+      (error) => {
+        console.log("Error in getting goals", error);
       }
     );
     //return a cleanup function to stop the listener
@@ -62,14 +70,17 @@ export default function App() {
     //call the function from firestoreHelper
     deleteFromDB(deletedId, "goals");
   }
-  function handleInputData(data: string) {
+  function handleInputData(data: userInput) {
     // this function will receive data from Input
     console.log("data received from Input ", data);
     //store the data in the state variable
     // setReceivedData(data);
     //close the modal
     // define a variable of type Goal object
-    let newGoal: GoalData = { text: data };
+    let newGoal: GoalData = {
+      text: data.text,
+      owner: auth.currentUser ? auth.currentUser.uid : null,
+    };
     // write to db by calling the functionf rom firestoreHelper
     writeToDB(newGoal, "goals");
     //update it with the data received from Input and a random number

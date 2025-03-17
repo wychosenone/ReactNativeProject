@@ -3,6 +3,7 @@ import { useState } from "react";
 import { View, Text, TextInput, Button, StyleSheet, Alert } from "react-native";
 import { router } from "expo-router";
 import { auth } from "@/Firebase/firebaseSetup";
+import { FirebaseError } from "firebase/app";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -19,9 +20,22 @@ export default function Login() {
     }
     try {
       const userCred = await signInWithEmailAndPassword(auth, email, password);
-    } catch (error: any) {
-      // Replace there with user friendly error message
-      Alert.alert("Error", error.message);
+    } catch (error) {
+      if (
+        error instanceof FirebaseError &&
+        "code" in error &&
+        "message" in error
+      ) {
+        if (error.code === "auth/user-not-found") {
+          Alert.alert("Error", "User not found");
+          return;
+        } else if (error.code === "auth/invalid-credential") {
+          Alert.alert("Error", "Invalid credentials");
+          return;
+        }
+        // Replace there with user friendly error message
+        Alert.alert("Error", error.message);
+      }
     }
   };
 
