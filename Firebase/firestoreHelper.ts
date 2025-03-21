@@ -1,65 +1,29 @@
-import { database } from './firebaseSetup';
-import { collection, addDoc, doc, deleteDoc, getDocs, getDoc, updateDoc } from 'firebase/firestore';
-import { User } from '@/types';
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  setDoc,
+} from "firebase/firestore";
+import { database } from "./firebaseSetup";
+import { GoalData, User } from "@/types";
 
-export interface goalData {
-  id?: string;
-  text: string;
-  warning?: boolean; 
-}
-
-export async function updateDB(id: string, collectionName: string, updates: Partial<goalData>) {
+export async function writeToDB(data: GoalData | User, collectionName: string) {
   try {
-    const docRef = doc(database, collectionName, id);
-    await updateDoc(docRef, updates);
-  } catch (err) {
-    console.error("Error updating document:", err);
-  }
-}
-export async function writeToDB(data: goalData|User, collectionName: string) {
-  try {
-    const goalsCollectionRef = collection(database, collectionName);
-    await addDoc(goalsCollectionRef, data);
-  } catch (err) {
-    console.error("Error adding document: ", err);
+    const docRef = await addDoc(collection(database, collectionName), data);
+  } catch (e) {
+    console.error("Error adding document: ", e);
   }
 }
 
+//delete a document from the database
 export async function deleteFromDB(id: string, collectionName: string) {
   try {
-    const docRef = doc(database, collectionName, id); 
-    await deleteDoc(docRef);
-  } catch (err) {
-    console.error("Error deleting document: ", err);
-  }
-}
-
-export async function deleteAllFromDB(collectionName: string) {
-  try {
-    const querySnapshot = await getDocs(collection(database, collectionName));
-    querySnapshot.forEach(async (docSnapshot) => {
-      const docRef = doc(database, collectionName, docSnapshot.id);
-      await deleteDoc(docRef);
-    });
-  } catch (err) {
-    console.error("Error deleting all documents: ", err);
-  }
-}
-
-export async function readDocFromDB(id: string, collectionName: string) {
-  try {
-    const docRef = doc(database, collectionName, id);
-    const docSnap = await getDoc(docRef);
-
-    if (docSnap.exists()) {
-      return { id, ...docSnap.data() } as goalData;
-    } else {
-      console.error("No document found with ID:", id);
-      return null;
-    }
-  } catch (err) {
-    console.error("Error reading document:", err);
-    return null;
+    await deleteDoc(doc(database, collectionName, id));
+  } catch (e) {
+    console.error("Error deleting document: ", e);
   }
 }
 
@@ -73,4 +37,31 @@ export async function readAllFromDB(collectionName: string) {
   });
   //return the data
   return data;
+}
+
+//read a document from the database
+export async function readDocFromDB(id: string, collectionName: string) {
+  try {
+    const docRef = doc(database, collectionName, id);
+    const docSnapshot = await getDoc(docRef);
+    if (docSnapshot.exists()) {
+      return docSnapshot.data();
+    }
+    return null;
+  } catch (e) {
+    console.error("Error reading document: ", e);
+  }
+}
+
+export async function updateDB(
+  id: string,
+  collectionName: string,
+  data: { [key: string]: any }
+) {
+  try {
+    //update a document in the database
+    await setDoc(doc(database, collectionName, id), data, { merge: true });
+  } catch (e) {
+    console.error("Error updating document: ", e);
+  }
 }
