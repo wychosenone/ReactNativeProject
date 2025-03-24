@@ -1,4 +1,4 @@
-import { View, Text, Button, StyleSheet } from "react-native";
+import { View, Text, Button, StyleSheet, Image } from "react-native";
 import React, { useEffect, useState } from "react";
 import { Stack, useLocalSearchParams, useNavigation } from "expo-router";
 import { readDocFromDB, updateDB } from "@/Firebase/firestoreHelper";
@@ -6,13 +6,16 @@ import PressableButton from "@/components/PressableButton";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import GoalUsers from "@/components/GoalUsers";
 import { GoalData } from "@/types";
+import { getDownloadURL, ref } from "firebase/storage";
+import { storage } from "@/Firebase/firebaseSetup";
+import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
 
 export default function GoalDetails() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [goal, setGoal] = useState<GoalData | null>(null);
   const [warning, setWarning] = useState(false);
   //   const navigation = useNavigation();
-
+  const [url, setUrl] = useState<string | null>(null);
   useEffect(() => {
     async function getData() {
       try {
@@ -20,6 +23,14 @@ export default function GoalDetails() {
         if (data != null) {
           if (data?.warning) {
             setWarning(true);
+          }
+          if (data.imageUri) {
+            //get a download url for the image
+            const imageRef = ref(storage, data.imageUri);
+            const downloadUrl = await getDownloadURL(imageRef);
+
+            //store the url in a state variab;e
+            setUrl(downloadUrl);
           }
           setGoal(data);
           //   navigation.setOptions({ headerTitle: data.text });
@@ -54,6 +65,9 @@ export default function GoalDetails() {
       />
       <Text style={warning && styles.warningText}>Details of {goal?.text}</Text>
       <GoalUsers goalId={id} />
+      {url && (
+        <Image source={{ uri: url }} style={{ width: 200, height: 200 }} />
+      )}
     </View>
   );
 }

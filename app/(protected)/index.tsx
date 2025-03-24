@@ -15,9 +15,10 @@ import { useEffect, useState } from "react";
 import GoalItem from "@/components/GoalItem";
 import { writeToDB, deleteFromDB } from "@/Firebase/firestoreHelper";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
-import { auth, database } from "@/Firebase/firebaseSetup";
+import { auth, database, storage } from "@/Firebase/firebaseSetup";
 import PressableButton from "@/components/PressableButton";
 import { GoalData, GoalFromDB, userInput } from "@/types";
+import { ref, uploadBytesResumable } from "firebase/storage";
 
 export default function App() {
   const appName = "My Awesome App";
@@ -70,31 +71,60 @@ export default function App() {
     //call the function from firestoreHelper
     deleteFromDB(deletedId, "goals");
   }
-  function handleInputData(data: userInput) {
-    // this function will receive data from Input
-    console.log("data received from Input ", data);
-    //store the data in the state variable
-    // setReceivedData(data);
-    //close the modal
-    // define a variable of type Goal object
-    let newGoal: GoalData = {
-      text: data.text,
-      owner: auth.currentUser ? auth.currentUser.uid : null,
-    };
-    // write to db by calling the functionf rom firestoreHelper
-    writeToDB(newGoal, "goals");
-    //update it with the data received from Input and a random number
-    // add the object to the goals array
-    // use updater function in setState whenever you are
-    // updating the state based on the previous state
-    // setGoals((currGoals) => {
-    //   return [...currGoals, newGoal];
-    // });
-    setIsModalVisible(false);
+  async function fetchImage(uri: string) {
+    try {
+      // fetch the image data from the uri
+      const response = await fetch(uri);
+      if (!response.ok) {
+        //e.g. a 404 error
+        throw new Error("Image not found");
+      }
+      const blob = await response.blob();
+      const imageName = uri.substring(uri.lastIndexOf("/") + 1);
+      const imageRef = ref(storage, `images/${imageName}`);
+      const uploadResult = await uploadBytesResumable(imageRef, blob);
+      return uploadResult.metadata.fullPath;
+    } catch (err) {
+      console.log("fetch image error", err);
+    }
   }
+  async function handleInputData(data: userInput) {
+    try {
+      let storedImageUri;
+      // this function will receive data from Input
+      if (data.imageUri != undefined) {
+        storedImageUri = await fetchImage(data.imageUri);
+      }
+      //store the data in the state variable
+      // setReceivedData(data);
+      //close the modal
+      // define a variable of type Goal object
+      let newGoal: GoalData = {
+        text: data.text,
+        owner: auth.currentUser ? auth.currentUser.uid : null,
+      };
+      if (storedImageUri) {
+        newGoal.imageUri = storedImageUri;
+      }
+      // write to db by calling the functionf rom firestoreHelper
+      writeToDB(newGoal, "goals");
+      //update it with the data received from Input and a random number
+      // add the object to the goals array
+      // use updater function in setState whenever you are
+      // updating the state based on the previous state
+      // setGoals((currGoals) => {
+      //   return [...currGoals, newGoal];
+      // });
+      setIsModalVisible(false);
+    } catch (err) {
+      console.log("handleInputData error", err);
+    }
+  }
+
   function dismissModal() {
     setIsModalVisible(false);
   }
+
   function deleteAll() {
     Alert.alert("Delete All", "Are you sure you want to delete all goals?", [
       {
