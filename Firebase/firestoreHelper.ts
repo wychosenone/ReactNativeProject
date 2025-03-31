@@ -10,9 +10,19 @@ import {
 import { database } from "./firebaseSetup";
 import { GoalData, User } from "@/types";
 
-export async function writeToDB(data: GoalData | User, collectionName: string) {
+export async function writeToDB(
+  data: GoalData | User,
+  collectionName: string,
+  id?: string
+) {
   try {
-    const docRef = await addDoc(collection(database, collectionName), data);
+    if (id) {
+      const newDocRef = await setDoc(doc(database, collectionName, id), data, {
+        merge: true,
+      });
+    } else {
+      const docRef = await addDoc(collection(database, collectionName), data);
+    }
   } catch (e) {
     console.error("Error adding document: ", e);
   }
