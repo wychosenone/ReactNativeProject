@@ -27,7 +27,7 @@ export default function GoalUsers({ goalId }: GoalUsersProps) {
         const response = await fetch(
           "https://jsonplaceholder.typicode.com/users"
         );
-        console.log("reeading from API");
+        console.log("reading from API");
         if (!response.ok) {
           throw new Error(
             `Something went wrong with the ${response.status} code`

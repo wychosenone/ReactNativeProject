@@ -8,6 +8,7 @@ import {
   ScrollView,
   FlatList,
   Alert,
+  Linking,
 } from "react-native";
 import Header from "@/components/Header";
 import Input from "@/components/Input";
@@ -19,8 +20,46 @@ import { auth, database, storage } from "@/Firebase/firebaseSetup";
 import PressableButton from "@/components/PressableButton";
 import { GoalData, GoalFromDB, userInput } from "@/types";
 import { ref, uploadBytesResumable } from "firebase/storage";
+import {
+  addNotificationReceivedListener,
+  addNotificationResponseReceivedListener,
+  setNotificationHandler,
+} from "expo-notifications";
+import { router } from "expo-router";
 
+setNotificationHandler({
+  handleNotification: async () => {
+    return {
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: true,
+    };
+  },
+});
 export default function App() {
+  // listener for receiving notifications in the useeffect
+  // this will be run only the first time the app is opened (after it's successfully rendered)
+  useEffect(() => {
+    const subscription = addNotificationReceivedListener((notification) => {
+      console.log(notification);
+    });
+    return () => {
+      subscription.remove();
+    };
+  }, []);
+  useEffect(() => {
+    const subscription = addNotificationResponseReceivedListener((response) => {
+      // extract the data from the response
+      // use Linking API from react-native to navigate to the url
+      Linking.openURL(response.notification.request.content.data.url);
+      // if we want to navigate user to the homapage screen:
+      // router.dismissAll();
+    });
+    return () => {
+      subscription.remove();
+    };
+  }, []);
+
   const appName = "My Awesome App";
   const [goals, setGoals] = useState<GoalFromDB[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);

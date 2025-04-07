@@ -35,7 +35,7 @@ export default function _layout() {
       console.log("user is not logged in");
       router.replace("(auth)/login");
     }
-  }, [userLoggedIn]);
+  }, [userLoggedIn, isLoading]);
 
   return isLoading ? <Text>isLoading</Text> : <Slot />;
 }
